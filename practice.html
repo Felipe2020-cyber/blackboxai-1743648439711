@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russian Practice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="game.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 id="categoryTitle" class="text-2xl font-bold text-center text-blue-600 mb-6"></h1>
+        
+        <div class="mb-6">
+            <div id="russianPhrase" class="text-2xl font-bold text-center mb-4 cursor-pointer hover:text-red-500"></div>
+            <div id="translation" class="text-lg text-gray-600 text-center mb-4"></div>
+        </div>
+
+        <div class="flex justify-between mb-6">
+            <div id="score" class="font-bold">Score: 0</div>
+            <div id="lives" class="flex space-x-2">
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+            </div>
+        </div>
+
+        <button id="startBtn" class="bg-green-600 text-white font-bold py-2 px-4 rounded w-full mb-2">
+            Start Pronunciation Check
+        </button>
+        <button id="nextBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded w-full hidden">
+            Next Word
+        </button>
+        <div id="feedback" class="mt-4 text-center font-semibold"></div>
+    </div>
+
+    <script>
+        // Get category from localStorage
+        const category = localStorage.getItem('practiceCategory');
+        const categoryTitles = {
+            'greetings': 'Приветствия (Greetings)',
+            'pronouns': 'Местоимения (Pronouns)',
+            'questions': 'Вопросы (Questions)',
+            'countries': 'Страны (Countries)',
+            'languages': 'Языки (Languages)',
+            'professions': 'Профессии (Professions)',
+            'hobbies': 'Хобби (Hobbies)',
+            'expressions': 'Выражения (Expressions)'
+        };
+
+        // Set category title
+        document.getElementById('categoryTitle').textContent = categoryTitles[category];
+
+        // Filter phrases by category
+        const categoryPhrases = {
+            'greetings': phrases.slice(0, 10),
+            'pronouns': phrases.slice(10, 18),
+            'questions': phrases.slice(18, 26),
+            'countries': phrases.slice(26, 35),
+            'languages': phrases.slice(35, 43),
+            'professions': phrases.slice(43, 58),
+            'hobbies': phrases.slice(58, 73),
+            'expressions': phrases.slice(73)
+        };
+
+        let currentPhrases = [...categoryPhrases[category]];
+        let currentIndex = 0;
+        let score = 0;
+        let lives = 3;
+
+        // Shuffle array function
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize practice
+        function initPractice() {
+            currentPhrases = shuffleArray([...categoryPhrases[category]]);
+            currentIndex = 0;
+            loadPhrase(currentIndex);
+        }
+
+        // Load phrase
+        function loadPhrase(index) {
+            if (index >= currentPhrases.length) {
+                endPractice(true);
+                return;
+            }
+
+            const phrase = currentPhrases[index];
+            document.getElementById('russianPhrase').textContent = phrase.russian;
+            document.getElementById('translation').textContent = phrase.english;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'mt-4 text-center font-semibold';
+            document.getElementById('nextBtn').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+        }
+
+        // Initialize game functions from game.js
+        // (All game logic from game.js will work with the currentPhrases array)
+        
+        // Start practice
+        initPractice();
+    </script>
+</body>
+</html>
