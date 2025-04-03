@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профессии (Professions)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Профессии (Professions)</h1>
+        
+        <div class="mb-6 text-center">
+            <div id="countdown" class="text-2xl font-bold text-gray-700 mb-2">20</div>
+            <div id="russianPhrase" class="text-4xl font-bold text-gray-800 mb-4"></div>
+            <div id="translation" class="text-lg text-gray-600 mb-4"></div>
+        </div>
+
+        <div class="flex justify-center mb-6">
+            <div id="lives" class="flex space-x-2">
+                <i class="fas fa-heart text-red-500 text-2xl"></i>
+                <i class="fas fa-heart text-red-500 text-2xl"></i>
+                <i class="fas fa-heart text-red-500 text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="flex flex-col space-y-4">
+            <button id="startBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                Start Pronunciation Check
+            </button>
+            <button id="restartBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition hidden">
+                Restart Practice
+            </button>
+            <div id="feedback" class="text-center text-lg font-semibold"></div>
+        </div>
+        
+        <audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"></audio>
+        <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+    </div>
+
+    <script>
+        // Filter professions phrases
+        window.currentPhrases = phrases.filter(phrase => {
+            const professionWords = [
+                "Работать", "Профессия", "Преподаватель", "Студент", "Студентка",
+                "Университет", "Школа", "Учеба", "Работа", "Офис", "Компания",
+                "Коллега", "Инженер", "Программист", "Врач", "Художник", "Актер",
+                "Музыкант", "Спортсмен"
+            ];
+            return professionWords.includes(phrase.russian);
+        });
+        window.currentPhraseIndex = 0;
+    </script>
+    <script src="game.js"></script>
+</body>
+</html>
