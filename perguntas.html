@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russian Culture Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Russian Culture Quiz</h1>
+        
+        <div class="mb-6">
+            <div id="question" class="text-xl font-semibold mb-2"></div>
+            <div id="russian-answer" class="text-2xl font-bold text-center mb-4 cursor-pointer hover:text-red-500"></div>
+            <div id="hint" class="text-gray-600 mb-4"></div>
+        </div>
+
+        <div class="flex justify-between mb-6">
+            <div id="score" class="font-bold">Score: 0</div>
+            <div id="lives" class="flex space-x-2">
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+            </div>
+        </div>
+
+        <button id="start-btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded w-full mb-2">
+            Start Answering
+        </button>
+        <button id="next-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded w-full hidden">
+            Next Question
+        </button>
+        <div id="feedback" class="mt-4 text-center font-semibold"></div>
+    </div>
+
+    <script>
+        // Russian culture questions
+        const questions = [
+            {
+                question: "What is the traditional Russian soup made with beets?",
+                answer: "Борщ",
+                english: "Borscht",
+                hint: "Served with sour cream"
+            },
+            {
+                question: "What is the name of the Russian nested dolls?",
+                answer: "Матрешка",
+                english: "Matryoshka",
+                hint: "Wooden dolls that fit inside each other"
+            },
+            {
+                question: "What is the traditional Russian musical instrument with three strings?",
+                answer: "Балалайка",
+                english: "Balalaika",
+                hint: "Triangular body shape"
+            }
+        ];
+
+        // Game variables
+        let currentQuestion = 0;
+        let score = 0;
+        let lives = 3;
+        let recognition;
+        let synth = window.speechSynthesis;
+
+        // DOM elements
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('russian-answer');
+        const hintEl = document.getElementById('hint');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const feedbackEl = document.getElementById('feedback');
+
+        // Initialize game
+        loadQuestion(currentQuestion);
+
+        // Load question
+        function loadQuestion(index) {
+            if (index >= questions.length) {
+                endGame(true);
+                return;
+            }
+
+            const q = questions[index];
+            questionEl.textContent = q.question;
+            answerEl.textContent = q.answer;
+            hintEl.textContent = q.hint;
+            feedbackEl.textContent = '';
+            feedbackEl.className = 'mt-4 text-center font-semibold';
+        }
+
+        // Speak Russian text
+        function speakRussian() {
+            if (synth.speaking) synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(answerEl.textContent);
+            utterance.lang = 'ru-RU';
+            synth.speak(utterance);
+        }
+
+        // Initialize speech recognition
+        function initRecognition() {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ru-RU';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = (event) => {
+                const userAnswer = event.results[0][0].transcript.trim();
+                checkAnswer(userAnswer);
+            };
+
+            recognition.onerror = (event) => {
+                feedbackEl.textContent = 'Error in recognition. Try again.';
+                feedbackEl.className += ' text-red-500';
+            };
+        }
+
+        // Check answer
+        function checkAnswer(userAnswer) {
+            const correctAnswer = questions[currentQuestion].answer.toLowerCase();
+            if (userAnswer.toLowerCase() === correctAnswer) {
+                correctAnswer();
+            } else {
+                wrongAnswer();
+            }
+        }
+
+        // Handle correct answer
+        function correctAnswer() {
+            score += 10;
+            scoreEl.textContent = `Score: ${score}`;
+            feedbackEl.textContent = 'Correct! ' + questions[currentQuestion].english;
+            feedbackEl.className += ' text-green-500';
+            startBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+            updateScore(10);
+        }
+
+        // Handle wrong answer
+        function wrongAnswer() {
+            lives--;
+            updateLives();
+            feedbackEl.textContent = 'Incorrect. Try again!';
+            feedbackEl.className += ' text-red-500';
+            
+            if (lives <= 0) {
+                endGame(false);
+            }
+        }
+
+        // Update lives display
+        function updateLives() {
+            livesEl.innerHTML = '';
+            for (let i = 0; i < lives; i++) {
+                livesEl.innerHTML += '<i class="fas fa-heart text-red-500"></i>';
+            }
+        }
+
+        // Update score on server
+        function updateScore(points) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) return;
+            
+            fetch('http://localhost:5000/update_score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    points: points
+                })
+            });
+        }
+
+        // End game
+        function endGame(won) {
+            if (won) {
+                feedbackEl.textContent = 'Congratulations! You completed the quiz!';
+            } else {
+                feedbackEl.textContent = 'Game Over! Try again!';
+            }
+            startBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            if (!recognition) initRecognition();
+            recognition.start();
+            feedbackEl.textContent = 'Listening...';
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentQuestion++;
+            nextBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+            loadQuestion(currentQuestion);
+        });
+
+        answerEl.addEventListener('click', speakRussian);
+
+        // Initialize lives display
+        updateLives();
+    </script>
+</body>
+</html>
